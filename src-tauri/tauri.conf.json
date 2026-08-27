@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "tauri-app",
-  "version": "0.1.0",
-  "identifier": "com.jatii.tauri-app",
+  "productName": "Rika",
+  "version": "0.1.1",
+  "identifier": "com.rika.player",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -14,8 +14,8 @@
       {
         "label": "main",
         "title": "Rika",
-        "width": 550,
-        "height": 480,
+        "width": 330,
+        "height": 300,
         "decorations": false,
         "transparent": true,
         "alwaysOnTop": true,

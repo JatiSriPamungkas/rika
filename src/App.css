@@ -36,14 +36,15 @@ body,
   height: 100vh;
   user-select: none;
   overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: all 0.2s ease;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 .rika-container.unlocked {
-  background: rgba(13, 13, 15, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 24px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8);
+  background: #1e1e1e;
+  border: 1px solid #0da2b6;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
 
 .rika-container.locked {
@@ -53,15 +54,16 @@ body,
   box-shadow: none;
 }
 
-/* Top Bar */
+/* Top Bar (Mockup Style) */
 .rika-header {
   display: flex;
-  height: 48px;
+  height: 36px;
   width: 100%;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 0 12px;
+  background-color: #cfd8dc;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   cursor: move;
 }
 
@@ -72,23 +74,14 @@ body,
 .rika-logo-container {
   display: flex;
   align-items: center;
-  gap: 8px;
+  height: 22px;
+  width: auto;
 }
 
-.rika-logo-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background-color: #f59e0b;
-  box-shadow: 0 0 10px #f59e0b;
-}
-
-.rika-logo-text {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.2em;
-  color: rgba(255, 255, 255, 0.75);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+.rika-logo-img {
+  height: 100%;
+  width: auto;
+  object-fit: contain;
 }
 
 .rika-controls {
@@ -98,35 +91,34 @@ body,
 }
 
 .rika-lock-btn {
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 3px 10px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  padding: 2px 8px;
   font-size: 10px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.60);
+  color: #37474f;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 .rika-lock-btn:hover {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.25);
+  color: #212121;
+  background: rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 0, 0, 0.3);
 }
 
 .rika-window-btns {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 .rika-window-btn {
   background: none;
   border: none;
   padding: 0;
-  color: rgba(255, 255, 255, 0.4);
+  color: #37474f;
   cursor: pointer;
   transition: color 0.2s ease;
   display: flex;
@@ -135,11 +127,11 @@ body,
 }
 
 .rika-window-btn:hover {
-  color: #ffffff;
+  color: #212121;
 }
 
 .rika-window-btn.close:hover {
-  color: #f87171;
+  color: #d32f2f;
 }
 
 /* Main Area Container */
@@ -148,7 +140,7 @@ body,
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 20px 32px;
+  padding: 16px 24px;
   overflow: hidden;
   position: relative;
 }
@@ -165,135 +157,114 @@ body,
 .rika-lyrics-list-inner {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 28px;
   width: 100%;
   position: absolute;
   top: 0;
   left: 0;
-  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
-  padding: 160px 0; /* Add top/bottom padding to center first & last items */
+  transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+  padding: 120px 0;
   box-sizing: border-box;
 }
 
 /* Base Lyric Item */
 .rika-lyric-item {
   position: relative;
-  padding-left: 24px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: 48px;
+  align-items: center;
+  text-align: center;
+  min-height: 40px;
   width: 100%;
   box-sizing: border-box;
-  transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
   opacity: 0;
-  transform: scale(0.95);
-  font-family: Georgia, Cambria, "Times New Roman", Times, serif;
+  transform: scale(0.96);
 }
 
 .rika-lyric-text {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.95);
+  color: rgba(255, 255, 255, 0.35);
   margin: 0;
-  line-height: 1.6;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+  line-height: 1.4;
+  width: 100%;
+  white-space: normal;
+  transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .rika-lyric-translation {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(255, 255, 255, 0.25);
   margin: 2px 0 0 0;
-  line-height: 1.6;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.4;
+  width: 100%;
   opacity: 0;
   max-height: 0;
   overflow: hidden;
-  transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 /* Active State */
 .rika-lyric-item.active {
   opacity: 1;
   transform: scale(1);
-  min-height: 64px;
 }
 
 .rika-lyric-item.active .rika-lyric-text {
-  font-size: 19px;
+  font-size: 22px;
   font-weight: 700;
   color: #ffffff;
-  letter-spacing: 0.02em;
-  white-space: normal;
-  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 .rika-lyric-item.active .rika-lyric-translation {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
-  color: #f59e0b;
-  letter-spacing: 0.02em;
+  color: #0da2b6;
   opacity: 1;
-  max-height: 80px;
+  max-height: 60px;
   margin-top: 4px;
-  white-space: normal;
-  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.4));
 }
 
 /* Prev/Next States */
 .rika-lyric-item.prev,
 .rika-lyric-item.next {
-  opacity: 0.25;
+  opacity: 0.35;
   transform: scale(0.98);
+}
+
+.rika-lyric-item.prev .rika-lyric-text,
+.rika-lyric-item.next .rika-lyric-text {
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 15px;
+  font-weight: 500;
 }
 
 /* Far Prev/Next States */
 .rika-lyric-item.far-prev,
 .rika-lyric-item.far-next {
-  opacity: 0.04;
-  transform: scale(0.94);
-}
-
-/* Indicator line */
-.rika-lyric-item .rika-active-indicator {
-  position: absolute;
-  left: 0;
-  top: 4px;
-  bottom: 4px;
-  width: 3px;
-  background: linear-gradient(to bottom, #fbbf24, #d97706);
-  border-radius: 9999px;
-  box-shadow: 0 0 10px rgba(245, 158, 11, 0.6);
-  opacity: 0;
-  transition: opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1);
-}
-
-.rika-lyric-item.active .rika-active-indicator {
-  opacity: 1;
+  opacity: 0.08;
+  transform: scale(0.95);
 }
 
 /* Status View */
 .rika-status-container {
   text-align: center;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 .rika-status-main {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255, 0.7);
   margin: 0;
 }
 
 .rika-status-sub {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.45);
-  margin: 6px 0 0 0;
+  color: rgba(255, 255, 255, 0.4);
+  margin: 4px 0 0 0;
 }
 
 /* Lock Badge */
@@ -311,13 +282,12 @@ body,
 }
 
 .rika-lock-badge-content {
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 4px;
   padding: 3px 8px;
   font-size: 9px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(255, 255, 255, 0.4);
   backdrop-filter: blur(4px);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }

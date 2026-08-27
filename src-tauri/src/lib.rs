@@ -1,5 +1,7 @@
-use tauri::{Emitter, WebviewWindow};
+use tauri::{Emitter, Manager, WebviewWindow};
 use serde::Serialize;
+use tauri::menu::{Menu, MenuItem};
+use tauri::tray::{TrayIconBuilder, TrayIconEvent};
 
 #[derive(Clone, Serialize)]
 struct TrackState {
@@ -29,6 +31,11 @@ fn start_drag(window: WebviewWindow) -> Result<(), String> {
 #[tauri::command]
 fn set_click_through(window: WebviewWindow, ignore: bool) -> Result<(), String> {
     window.set_ignore_cursor_events(ignore).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn close_app(app: tauri::AppHandle) {
+    app.exit(0);
 }
 
 async fn fetch_lyrics_internal(
@@ -179,12 +186,48 @@ pub fn run() {
         .setup(|app| {
             use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut};
             
-            let ctrl_alt_l = Shortcut::new(
+            let ctrl_alt_k = Shortcut::new(
                 Some(Modifiers::CONTROL | Modifiers::ALT),
-                Code::KeyL,
+                Code::KeyK,
             );
-            let _ = app.global_shortcut().register(ctrl_alt_l);
-            
+            if let Err(e) = app.global_shortcut().register(ctrl_alt_k) {
+                println!("[Rika HUD] Failed to register global shortcut Ctrl+Alt+K: {:?}", e);
+            } else {
+                println!("[Rika HUD] Successfully registered global shortcut Ctrl+Alt+K");
+            }
+
+            // Setup system tray menu and handler
+            let toggle_lock = MenuItem::with_id(app, "toggle_lock", "Toggle Lock/Unlock (Ctrl+Alt+K)", true, None::<&str>)?;
+            let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+            let menu = Menu::with_items(app, &[&toggle_lock, &quit])?;
+
+            if let Some(icon) = app.default_window_icon().cloned() {
+                if let Some(window) = app.get_webview_window("main") {
+                    let _ = window.set_icon(icon.clone());
+                }
+                let _tray = TrayIconBuilder::new()
+                    .icon(icon)
+                    .menu(&menu)
+                    .on_menu_event(|app, event| {
+                        match event.id.as_ref() {
+                            "toggle_lock" => {
+                                let _ = app.emit("toggle-click-through", ());
+                            }
+                            "quit" => {
+                                app.exit(0);
+                            }
+                            _ => {}
+                        }
+                    })
+                    .on_tray_icon_event(|tray, event| {
+                        if let TrayIconEvent::Click { button: tauri::tray::MouseButton::Left, .. } = event {
+                            let app = tray.app_handle();
+                            let _ = app.emit("toggle-click-through", ());
+                        }
+                    })
+                    .build(app)?;
+            }
+
             let handle = app.handle().clone();
             
             tauri::async_runtime::spawn(async move {
@@ -251,13 +294,25 @@ pub fn run() {
                     // Emit track state to frontend
                     let _ = handle.emit("track-state", state);
                     
+                    // Check for local file trigger (e.g. /tmp/rika_toggle)
+                    let trigger_path = std::env::temp_dir().join("rika_toggle");
+                    if trigger_path.exists() {
+                        println!("[Rika Rust] Detected file trigger /tmp/rika_toggle! Emitting toggle event...");
+                        if let Err(e) = std::fs::remove_file(&trigger_path) {
+                            println!("[Rika Rust] Error removing trigger file: {:?}", e);
+                        }
+                        if let Err(e) = handle.emit("toggle-click-through", ()) {
+                            println!("[Rika Rust] Error emitting toggle-click-through event: {:?}", e);
+                        }
+                    }
+                    
                     tokio::time::sleep(std::time::Duration::from_millis(250)).await;
                 }
             });
             
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![start_drag, set_click_through])
+        .invoke_handler(tauri::generate_handler![start_drag, set_click_through, close_app])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

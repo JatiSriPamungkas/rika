@@ -73,6 +73,16 @@ function parseLrc(lrcText: string): LyricLine[] {
   return lyrics.sort((a, b) => a.time - b.time);
 }
 
+function RikaLogo() {
+  return (
+    <img 
+      src="/rika-logo.png" 
+      alt="Rika Logo" 
+      className="rika-logo-img"
+    />
+  );
+}
+
 export default function App() {
   const [clickThrough, setClickThrough] = useState(false);
   const [state, setState] = useState<TrackState>({
@@ -92,24 +102,37 @@ export default function App() {
   const [offsetY, setOffsetY] = useState(0);
 
   useEffect(() => {
+    let active = true;
     let unlisten: (() => void) | undefined;
     let unlistenShortcut: (() => void) | undefined;
 
     listen<TrackState>("track-state", (event) => {
+      if (!active) return;
       console.log("[Rika Frontend] Received track-state:", event.payload);
       setState(event.payload);
       setReceivedAt(Date.now());
     }).then((fn) => {
-      unlisten = fn;
+      if (!active) {
+        fn();
+      } else {
+        unlisten = fn;
+      }
     });
 
     listen("toggle-click-through", () => {
+      if (!active) return;
+      console.log("[Rika Frontend] Received toggle-click-through event!");
       toggleClickThrough();
     }).then((fn) => {
-      unlistenShortcut = fn;
+      if (!active) {
+        fn();
+      } else {
+        unlistenShortcut = fn;
+      }
     });
 
     return () => {
+      active = false;
       if (unlisten) unlisten();
       if (unlistenShortcut) unlistenShortcut();
     };
@@ -147,16 +170,16 @@ export default function App() {
   };
 
   const toggleClickThrough = () => {
+    console.log("[Rika Frontend] Toggling click through state...");
     setClickThrough((prev) => {
       const nextState = !prev;
+      console.log("[Rika Frontend] Invoking set_click_through to:", nextState);
       invoke("set_click_through", { ignore: nextState }).catch(console.error);
       return nextState;
     });
   };
 
-  const handleMinimize = () => getCurrentWindow().minimize().catch(console.error);
-  const handleToggleMaximize = () => getCurrentWindow().toggleMaximize().catch(console.error);
-  const handleClose = () => getCurrentWindow().close().catch(console.error);
+  const handleClose = () => invoke("close_app").catch(console.error);
 
   const activeIndex = useMemo(() => {
     let index = -1;
@@ -253,53 +276,38 @@ export default function App() {
       {/* Top Bar (Visible only when unlocked) */}
       {!clickThrough && (
         <div onMouseDown={handleStartDrag} className="rika-header">
-          {/* Brand/Logo */}
+          {/* Logo only */}
           <div className="rika-logo-container">
-            <div className="rika-logo-dot" />
-            <span className="rika-logo-text">RIKA PLAYER</span>
+            <RikaLogo />
           </div>
 
-          {/* Window Controls & Lock Button */}
+          {/* Window Controls */}
           <div className="rika-controls">
-            {/* Lock Button */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleClickThrough();
-              }}
-              className="rika-lock-btn"
-              title="Lock HUD (Press Ctrl+Alt+L to unlock)"
-            >
-              Lock HUD
-            </button>
-            
             {/* Window control buttons */}
             <div className="rika-window-btns">
+              {/* Subtle lock/click-through button */}
               <button 
-                onClick={(e) => { e.stopPropagation(); handleMinimize(); }}
+                onClick={(e) => { e.stopPropagation(); toggleClickThrough(); }}
                 className="rika-window-btn"
-                title="Minimize"
+                title="Lock HUD (Ctrl+Alt+K)"
               >
-                <svg style={{ width: "14px", height: "14px" }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 12H5" />
+                <svg style={{ width: "12px", height: "12px" }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                 </svg>
               </button>
-              <button 
-                onClick={(e) => { e.stopPropagation(); handleToggleMaximize(); }}
-                className="rika-window-btn"
-                title="Toggle Maximize"
-              >
-                <svg style={{ width: "14px", height: "14px" }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4h4M20 8V4h-4M4 16v4h4M20 16v4h-4" />
-                </svg>
-              </button>
+
+
+
+              {/* Close */}
               <button 
                 onClick={(e) => { e.stopPropagation(); handleClose(); }}
                 className="rika-window-btn close"
                 title="Close"
               >
-                <svg style={{ width: "14px", height: "14px" }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                <svg style={{ width: "12px", height: "12px" }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
               </button>
             </div>
@@ -344,7 +352,6 @@ export default function App() {
                     className={itemClass}
                     data-index={index}
                   >
-                    <div className="rika-active-indicator" />
                     <p className="rika-lyric-text">
                       {line.text}
                     </p>
@@ -365,7 +372,7 @@ export default function App() {
       {clickThrough && (
         <div className="rika-lock-badge">
           <span className="rika-lock-badge-content">
-            Locked (Ctrl+Alt+L to unlock)
+            Locked
           </span>
         </div>
       )}
