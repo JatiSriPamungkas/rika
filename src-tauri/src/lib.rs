@@ -30,12 +30,14 @@ fn start_drag(window: WebviewWindow) -> Result<(), String> {
 
 #[tauri::command]
 fn set_click_through(window: WebviewWindow, ignore: bool) -> Result<(), String> {
+    let _ = window.set_always_on_top(true);
     window.set_ignore_cursor_events(ignore).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-fn close_app(app: tauri::AppHandle) {
-    app.exit(0);
+fn close_app(window: WebviewWindow) {
+    let _ = window.destroy();
+    std::process::exit(0);
 }
 
 async fn fetch_lyrics_internal(
@@ -173,6 +175,11 @@ fn get_spotify_state() -> TrackState {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    #[cfg(target_os = "linux")]
+    {
+        std::env::set_var("GDK_BACKEND", "x11");
+    }
+
     tauri::Builder::default()
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
@@ -204,6 +211,7 @@ pub fn run() {
             if let Some(icon) = app.default_window_icon().cloned() {
                 if let Some(window) = app.get_webview_window("main") {
                     let _ = window.set_icon(icon.clone());
+                    let _ = window.set_always_on_top(true);
                 }
                 let _tray = TrayIconBuilder::new()
                     .icon(icon)
@@ -214,7 +222,7 @@ pub fn run() {
                                 let _ = app.emit("toggle-click-through", ());
                             }
                             "quit" => {
-                                app.exit(0);
+                                std::process::exit(0);
                             }
                             _ => {}
                         }

@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { getCurrentWindow } from "@tauri-apps/api/window";
 import "./App.css";
 
 interface TrackState {
@@ -192,18 +191,6 @@ export default function App() {
     }
     return index;
   }, [lyrics, interpolatedPosition]);
-
-  const prevLine = useMemo(() => {
-    return activeIndex > 0 ? lyrics[activeIndex - 1] : null;
-  }, [lyrics, activeIndex]);
-
-  const currentLine = useMemo(() => {
-    return activeIndex !== -1 ? lyrics[activeIndex] : null;
-  }, [lyrics, activeIndex]);
-
-  const nextLine = useMemo(() => {
-    return activeIndex + 1 < lyrics.length ? lyrics[activeIndex + 1] : null;
-  }, [lyrics, activeIndex]);
 
   // Adjust scroll offset to keep active lyric centered smoothly
   useEffect(() => {
